@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:my_gallery/ui/my_gallery_view_model.dart';
+
+import 'my_gallery_view_model.dart';
 
 class MyGalleryApp extends StatefulWidget {
   const MyGalleryApp({Key? key}) : super(key: key);
@@ -12,19 +13,47 @@ class MyGalleryApp extends StatefulWidget {
 }
 
 class _MyGalleryAppState extends State<MyGalleryApp> {
-  // final ImagePicker _picker = ImagePicker();
-  final _galleryModel = MyGalleryModel();
+  final ImagePicker _picker = ImagePicker();
+  final model = MyGalleryModel();
 
   // 객체가 받는 파일
-  // List<XFile>? images;
-  //
-  // int currentPage = 0;
-  // final pageController = PageController();
+ // List<XFile>? images;
+
+  int currentPage = 0;
+  final pageController = PageController();
 
   @override
   void initState() {
     super.initState();
-    _galleryModel.loadImages();
+    loadImages();
+  }
+
+  Future<void> loadImages() async {
+    // ..? set이 왜 필요하지..?
+    // 에러 내용..
+    // There isn't a setter named 'images' in class 'MyGalleryModel'. (Documentation)  '
+    //     'Try correcting the name to reference an existing setter, or declare the setter.
+    model.images = await _picker.pickMultiImage();
+
+    // 자동으로 사진이 넘어가게끔 시간 설정
+    if (images != null) {
+      Timer.periodic(const Duration(seconds: 5), (timer) {
+        currentPage++;
+
+        if (currentPage > images!.length - 1) {
+          currentPage = 0;
+        }
+        // 페이지 에니메이션 5초뒤 넘어감
+        pageController.animateToPage(
+          currentPage,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeIn,
+        );
+      });
+    }
+
+    // 화면 갱신해달라는 의미로 셋스테이트
+    setState(() {});
   }
 
   @override
@@ -33,15 +62,15 @@ class _MyGalleryAppState extends State<MyGalleryApp> {
       appBar: AppBar(
         title: const Text('전자액자'),
       ),
-      body: _galleryModel.images == null
+      body: images == null
           ? const Center(
         child: Text('No data'),
       )
 
       // 슬라이드 구현
           : PageView(
-        controller: _galleryModel.pageController,
-        children: _galleryModel.images!.map((image) {
+        controller: pageController,
+        children: images!.map((image) {
           // 사진 표시 로직
           return FutureBuilder<Uint8List>(
             // 여기서 오래 걸리는 작업을
