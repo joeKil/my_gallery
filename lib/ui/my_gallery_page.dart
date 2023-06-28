@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 import 'my_gallery_view_model.dart';
 
@@ -13,12 +12,10 @@ class MyGalleryApp extends StatefulWidget {
 }
 
 class _MyGalleryAppState extends State<MyGalleryApp> {
-  final ImagePicker _picker = ImagePicker();
   final model = MyGalleryModel();
-  var images = MyGalleryModel().images;
 
   int currentPage = 0;
-  final pageController = PageController();
+  final pageController =  PageController();
 
   @override
   void initState() {
@@ -27,19 +24,19 @@ class _MyGalleryAppState extends State<MyGalleryApp> {
   }
 
   Future<void> loadImages() async {
-    images = await _picker.pickMultiImage();
+   await model.loadImages();
 
     // 자동으로 사진이 넘어가게끔 시간 설정
-    if (images != null) {
+    if (model.images != null) {
       Timer.periodic(const Duration(seconds: 5), (timer) {
-        currentPage++;
+        model.nextPage();
 
-        if (currentPage > images!.length - 1) {
+        if (currentPage > model.images!.length - 1) {
           currentPage = 0;
         }
         // 페이지 에니메이션 5초뒤 넘어감
         pageController.animateToPage(
-          currentPage,
+          model.currentPage,
           duration: const Duration(milliseconds: 350),
           curve: Curves.easeIn,
         );
@@ -50,13 +47,15 @@ class _MyGalleryAppState extends State<MyGalleryApp> {
     setState(() {});
   }
 
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('전자액자'),
       ),
-      body: images == null
+      body: model.images == null
           ? const Center(
         child: Text('No data'),
       )
@@ -64,7 +63,7 @@ class _MyGalleryAppState extends State<MyGalleryApp> {
       // 슬라이드 구현
           : PageView(
         controller: pageController,
-        children: images!.map((image) {
+        children: model.images!.map((image) {
           // 사진 표시 로직
           return FutureBuilder<Uint8List>(
             // 여기서 오래 걸리는 작업을
