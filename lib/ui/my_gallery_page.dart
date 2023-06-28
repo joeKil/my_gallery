@@ -15,9 +15,7 @@ class MyGalleryApp extends StatefulWidget {
 class _MyGalleryAppState extends State<MyGalleryApp> {
   final ImagePicker _picker = ImagePicker();
   final model = MyGalleryModel();
-
-  // 객체가 받는 파일
- // List<XFile>? images;
+  var images = MyGalleryModel().images;
 
   int currentPage = 0;
   final pageController = PageController();
@@ -29,11 +27,7 @@ class _MyGalleryAppState extends State<MyGalleryApp> {
   }
 
   Future<void> loadImages() async {
-    // ..? set이 왜 필요하지..?
-    // 에러 내용..
-    // There isn't a setter named 'images' in class 'MyGalleryModel'. (Documentation)  '
-    //     'Try correcting the name to reference an existing setter, or declare the setter.
-    model.images = await _picker.pickMultiImage();
+    images = await _picker.pickMultiImage();
 
     // 자동으로 사진이 넘어가게끔 시간 설정
     if (images != null) {
